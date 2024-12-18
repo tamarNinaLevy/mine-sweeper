@@ -1,0 +1,64 @@
+body {
+    text-align: center;
+    color: black;
+    font-family: Arial, Helvetica, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.board {
+    width: 500px;
+    height: 500px;
+    background-color: pink;
+}
+
+.cell {
+    width: 50px;
+    height: 50px;
+    background-color: rgb(56, 56, 56);
+}
+
+.revealed {
+    background-color: rgb(158, 149, 149);
+}
+
+.shadow {
+    box-shadow: 2px 2px 0px 0px;
+}
+
+.button {
+    width: 100px;
+    height: 42px;
+    border: thin solid white;
+    border-radius: 10px;
+    box-shadow: 0px 0px 9px 0px yellow;
+    color: black;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-weight: 600;
+}
+
+.modal {
+    position: absolute;
+    background-color: black;
+    width: 200px;
+    height: 150px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: thin solid yellow;
+    border-radius: 20px;
+    box-shadow: 0px 0px 9px 0px yellow;
+    color: yellow;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+.show {
+    display: flex;
+}
+
+.hide {
+    display: none;
+}
