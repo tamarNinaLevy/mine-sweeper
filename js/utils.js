@@ -1,5 +1,16 @@
 'use strict'
 
+function createEmptyMatrix(rows, columns) {
+    var mat = []
+    for (var i = 0; i < rows; i++) {
+        mat[i] = []
+        for (var j = 0; j < columns; j++) {
+            mat[i].push('')
+        }
+    }
+    return mat
+}
+
 function renderBoard(mat, selector) {
     console.log('Rendering...')
     var strHTML = '<table><tbody>'

@@ -10,6 +10,9 @@ const EMPTY = ' '
 const MARK = `<span>&#9873;</span>`
 const GAME_OVER = 'Game Over!'
 const CONGRATS = 'You Won!'
+const GAMING_SMILE = '😀'
+const WINNING_SMILE = '🤩'
+const LOOSING_SMILE = '☹️'
 
 var gBoard = []
 var minesPositions = []
@@ -23,25 +26,29 @@ var gGame = {
 
 var gRevealed = 0
 var gMarkedCorrect = 0
+var gLives = 3
 
 function onInit() {
     console.log('Initiating game...')
     gRevealed = 0
     gMarkedCorrect = 0
+    gLives = 3
     setModalState(false, '')
-    minesPositions = createMinesPositions()
-    gBoard = createBoardData()
-    setBoardWithMinesCounters(gBoard)
+    document.getElementsByClassName('emoji')[0].innerHTML = GAMING_SMILE
+    document.getElementsByClassName('life')[0].innerText = `${gLives} lives left`
+    gBoard = createEmptyMatrix(ROWS, COLUMNS)
+    console.log("gBoard: ", gBoard)
     renderBoard(gBoard, '.board-container')
     gGame.isOn = true
 }
 
-function createMinesPositions() {
+function createMinesPositions(i, j) {
     console.log('Mining...')
     var mines = []
-    for (var i = 0; i < MINES; i++) {
+    var cellNum = (gBoard[0].length * i) + (j + 1)
+    for (var n = 0; n < MINES; n++) {
         var boardRandomPosition = getRandomInt(1, SIZE + 1)
-        while (mines.includes(boardRandomPosition)) {
+        while (mines.includes(boardRandomPosition) || cellNum === boardRandomPosition) {
             boardRandomPosition = getRandomInt(1, SIZE + 1)
         }
         mines.push(boardRandomPosition)
@@ -121,33 +128,48 @@ function positionsArray(board, rowIdx, colIdx) {
     return positions
 }
 
+function onFirstClick(i, j) {
+    console.log("first click i, j: ", i, j);
+    minesPositions = createMinesPositions(i, j)
+    gBoard = createBoardData()
+    setBoardWithMinesCounters(gBoard)
+}
+
 function onCellClicked(elCell, i, j, event) {
+    if (gRevealed === 0) {
+        onFirstClick(i, j)
+    }
     var cellData = gBoard[i][j]
     if (!gGame.isOn || cellData.isShown) return
     if (event.button === 2) {
         renderCell({ i, j }, cellData.isMarked ? EMPTY : MARK)
         cellData.isMarked = !cellData.isMarked
-        return
-    }
-    if (cellData.content === MINE) {
-        gGame.isOn = false
-        revealCells(minesPositions)
-        gameOver()
-        return
-    }
-    if (cellData.content === EMPTY || cellData.content > 0) {
-        //* this condition is only for when the cell is empty
-        if (cellData.content === EMPTY) {
-            var pos = positionsArray(gBoard, i, j)
-            gRevealed += pos.length
-            revealCells(pos)
+    } else {
+        if (cellData.content === MINE) {
+            gLives--
+            alert('Carful! you clicked a mine!')
+            document.getElementsByClassName('life')[0].innerText = `${gLives} lives left`
+            if (gLives === 0) {
+                gGame.isOn = false
+                revealCells(minesPositions)
+                gameOver()
+                return
+            }
+            return
+        } else if (cellData.content === EMPTY || cellData.content > 0) {
+            //* this condition is only for when the cell is empty
+            if (cellData.content === EMPTY) {
+                var pos = positionsArray(gBoard, i, j)
+                gRevealed += pos.length
+                revealCells(pos)
+            }
+            //* reveals both empty and counting cells
+            renderCell({ i, j }, cellData.content)
+            removeClassFromElement({ i, j }, 'shadow')
+            addClassToElement({ i, j }, 'revealed')
+            gBoard[i][j].isShown = true
+            gRevealed++
         }
-        //* reveals both empty and counting cells
-        renderCell({ i, j }, cellData.content)
-        removeClassFromElement({ i, j }, 'shadow')
-        addClassToElement({ i, j }, 'revealed')
-        gBoard[i][j].isShown = true
-        gRevealed++
     }
     checkWin()
 }
@@ -163,12 +185,13 @@ function revealCells(pos) {
 }
 
 function gameOver() {
+    document.getElementsByClassName('emoji')[0].innerHTML = LOOSING_SMILE
     setModalState(true, GAME_OVER)
     reset()
 }
 
 function reset() {
-    console.log('Resetting game...');
+    console.log('Resetting game...')
     gBoard = []
     minesPositions = []
     gGame = {
@@ -179,6 +202,7 @@ function reset() {
     }
     gRevealed = 0
     gMarkedCorrect = 0
+    gLives = 3
 }
 
 function checkWin() {
@@ -192,6 +216,7 @@ function checkWin() {
         }
     }
     if (!(allMarked && SIZE - MINES === gRevealed)) return
+    document.getElementsByClassName('emoji')[0].innerHTML = WINNING_SMILE
     setModalState(true, CONGRATS)
     reset()
 }
