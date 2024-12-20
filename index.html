@@ -10,9 +10,15 @@
 </head>
 
 <body onload="onInit()">
+
     <h1>mine sweeper game</h1>
-    <h2 class="life"></h2>
-    <div class="emoji"></div>
+
+    <div class="headers">
+        <h2 class="life"></h2>
+        <h2 class="score"></h2>
+        <div class="emoji"></div>
+        <div class="hints"></div>
+    </div>
 
     <div class="board-container"></div>
 
@@ -22,9 +28,11 @@
     </div>
 
     <footer class="footer">Tamar Levy</footer>
-    
-    <script src="js/game.js"></script>
+
     <script src="js/utils.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/board.js"></script>
+
 </body>
 
 </html>

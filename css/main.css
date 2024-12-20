@@ -14,6 +14,18 @@ body {
     font-family: Arial, Helvetica, sans-serif;
 }
 
+.headers {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.emoji {
+    font-size: 4rem;
+}
+
 .board {
     width: 500px;
     height: 500px;
@@ -70,11 +82,25 @@ body {
 
 .footer {
     background-color: rgb(180, 180, 227);
-    width:100%;
+    width: 100%;
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: center;
     position: relative;
-    height:10%;
+    height: 10%;
+}
+
+.hints {
+    width: 215px;
+    height: 69px;
+    background-color: aliceblue;
+}
+
+.hint {
+    font-size: 3rem;
+}
+
+.hint-click {
+    background-color: orange;
 }
