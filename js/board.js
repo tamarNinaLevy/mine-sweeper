@@ -36,7 +36,6 @@ function createBoardData() {
                 isMine = true
             }
             row.push({
-                minesAroundCount: 0,
                 isShown: false,
                 isMine: isMine,
                 isMarked: false

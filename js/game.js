@@ -16,7 +16,7 @@ const LOOSING_SMILE = '☹️'
 const HINT = '💡'
 
 var gBoard = []
-var minesPositions = []
+var gMinesPositions = []
 
 var gGame = {
     isOn: false,
@@ -25,23 +25,19 @@ var gGame = {
     secsPassed: 0
 }
 
-var gRevealed = 0
-var gMarkedCorrect = 0
 var gLives = 3
 var gHintsCount = 0
 var gHintOn = false
 var gScore = 0
 
 //TODO
-//TODO gScore < 0 condition = stays 0
-//TODO organize code
-//TODO go through data structure of cell on board
-//TODO go through data structure of game
-//TODO make sure variables names start with g
 //TODO rename positionsArray
 //TODO pos var for positions array in onCellClicked make it in the beginning for everyone
 //TODO make renderCell, revealCell, removeClass, addClass in one function for all use cases
 //TODO represent lives left with hearts
+//TODO position modal in center
+//TODO add seconds and score to modal
+//TODO seconds timer
 
 function onInit() {
     console.log('Initiating game...')
@@ -54,15 +50,14 @@ function onInit() {
 
 function resetGlobalVariables() {
     gBoard = []
-    minesPositions = []
+    gMinesPositions = []
     gGame = {
         isOn: false,
         shownCount: 0,
         markedCount: 0,
         secsPassed: 0
     }
-    gRevealed = 0
-    gMarkedCorrect = 0
+    gGame.shownCount = 0
     gLives = 3
     gHintsCount = 0
     gHintOn = false
@@ -90,12 +85,11 @@ function onHintClick(i) {
     hintEl.classList.add('hint-click')
     hintEl.removeAttribute('onclick')
     gHintOn = true
-    gScore -= 3
-    document.querySelector('score').innerHTML = `score: ${gScore}`
+    updateScore(-3)
 }
 
 function onFirstClick(i, j) {
-    minesPositions = createMinesPositions(i, j)
+    gMinesPositions = createMinesPositions(i, j)
     gBoard = createBoardData()
     setBoardWithMinesCounters(gBoard)
     gGame.isOn = true
@@ -103,7 +97,7 @@ function onFirstClick(i, j) {
 }
 
 function onCellClicked(elCell, i, j, event) {
-    if (gRevealed === 0) {
+    if (gGame.shownCount === 0) {
         onFirstClick(i, j)
     }
     var cellData = gBoard[i][j]
@@ -117,16 +111,20 @@ function onCellClicked(elCell, i, j, event) {
     if (event && event.button === 2) {
         renderCell({ i, j }, cellData.isMarked ? EMPTY : MARK)
         cellData.isMarked = !cellData.isMarked
+        for (var n = 0; n < gMinesPositions.length; n++) {
+            if (gMinesPositions[n].i === i && gMinesPositions[n].j === j) {
+                gGame.markedCount += cellData.isMarked ? 1 : -1
+            }
+        }
     } else {
         if (cellData.content === MINE) {
             handleMineClick()
             return
         }
+        handleEmptyOrNumberClick(i, j, cellData.content)
         if (cellData.content === EMPTY) {
             fullExpansion(gBoard, i, j)
         }
-        handleEmptyOrNumberClick(i, j, cellData.content)
-        document.querySelector('.score').innerHTML = `score: ${gScore}`
     }
     checkWin()
 }
@@ -149,14 +147,14 @@ function handleUseHint(i, j, content) {
 function handleMineClick() {
     alert('Carefull! you clicked a mine!')
     gLives--
-    gScore -= 5
     document.getElementsByClassName('life')[0].innerText = `${gLives} lives left`
+    updateScore(-5)
     if (gLives === 0) {
         gGame.isOn = false
-        revealCells(minesPositions, 'revealed', 'shadow')
+        revealCells(gMinesPositions, 'revealed', 'shadow')
         gameOver()
+        return
     }
-    document.querySelector('.score').innerHTML = `score: ${gScore}`
 }
 
 function fullExpansion(gBoard, i, j) {
@@ -165,12 +163,14 @@ function fullExpansion(gBoard, i, j) {
         var revealPos = positionsArray(gBoard, i, j)
         revealPos.filter((item) => item.content === MINE)
         revealCells(revealPos, 'revealed', 'shadow')
+        gGame.shownCount += revealPos.length
+        updateScore(revealPos.length)
         for (var k = 0; k < revealPos.length; k++) {
             fullExpansion(gBoard, revealPos[k].i, revealPos[k].j)
         }
-        gRevealed += revealPos.length
-        gScore += revealPos.length
-    } else return
+    } else {
+        return
+    }
 }
 
 function handleEmptyOrNumberClick(i, j, content) {
@@ -178,8 +178,15 @@ function handleEmptyOrNumberClick(i, j, content) {
     removeClassFromElement({ i, j }, 'shadow')
     addClassToElement({ i, j }, 'revealed')
     gBoard[i][j].isShown = true
-    gRevealed++
-    gScore++
+    gGame.shownCount++
+    updateScore(1)
+}
+
+function updateScore(points) {
+    gScore += points
+    if (gScore < 0)
+        gScore = 0
+    document.querySelector('.score').innerHTML = `score: ${gScore}`
 }
 
 function revealCells(pos, addClass, removeClass) {
@@ -214,16 +221,10 @@ function gameOver() {
 
 function checkWin() {
     console.log('Checking...')
-    var allMarked = true
-    for (var i = 0; i < minesPositions.length; i++) {
-        var pos = minesPositions[i]
-        if (!gBoard[pos.i][pos.j].isMarked || !gBoard[pos.i][pos.j].isMine) {
-            allMarked = false
-            break
-        }
+    if (gGame.markedCount === MINES && (SIZE - MINES) === gGame.shownCount) {
+        document.getElementsByClassName('emoji')[0].innerHTML = WINNING_SMILE
+        setModalState(true, CONGRATS)
+        gGame.isOn = false
+        return
     }
-    if (!(allMarked && SIZE - MINES === gRevealed)) return
-    document.getElementsByClassName('emoji')[0].innerHTML = WINNING_SMILE
-    setModalState(true, CONGRATS)
-    resetGlobalVariables()
 }
